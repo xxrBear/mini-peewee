@@ -9,7 +9,7 @@ DATABASE_NAME = os.environ.get("PEEWEE_DATABASE", "mpw.db")
 logger = logging.getLogger("mpw.logger")
 
 
-class Database(object):
+class Database:
     def __init__(self, database):
         self.database = database
         self.conn = self.get_connection()
@@ -48,7 +48,7 @@ class Database(object):
 database = Database(DATABASE_NAME)
 
 
-class QueryResultWrapper(object):
+class QueryResultWrapper:
     _result_cache = []
 
     def __init__(self, model, cursor):
@@ -90,7 +90,7 @@ def desc(f):
     return (f, "DESC")
 
 
-class BaseQuery(object):
+class BaseQuery:
     operations = {
         "lt": "< %s",
         "lte": "<= %s",
@@ -221,7 +221,7 @@ class BaseQuery(object):
 
 class SelectQuery(BaseQuery):
     """
-    Model.select('*').where(fie/ld=val).join(RelModel).where(rel_field=val)
+    Model.select('*').where(field=val).join(RelModel).where(rel_field=val)
     """
 
     requires_commit = False
@@ -437,7 +437,7 @@ class InsertQuery(BaseQuery):
         return result.lastrowid
 
 
-class Field(object):
+class Field:
     db_field = ""
     field_template = "%(db_field)s"
 
@@ -542,7 +542,7 @@ class PrimaryKeyField(IntegerField):
     field_template = "%(db_field)s NOT NULL PRIMARY KEY"
 
 
-class ForeignRelatedObject(object):
+class ForeignRelatedObject:
     def __init__(self, to, name):
         self.field_name = name
         self.to = to
@@ -561,7 +561,7 @@ class ForeignRelatedObject(object):
         setattr(instance, self.cache_name, obj)
 
 
-class ReverseForeignRelatedObject(object):
+class ReverseForeignRelatedObject:
     def __init__(self, related_model, name):
         self.field_name = name
         self.related_model = related_model
@@ -600,7 +600,7 @@ class BaseModel(type):
     def __new__(cls, name, bases, attrs):
         cls = super(BaseModel, cls).__new__(cls, name, bases, attrs)
 
-        class Meta(object):
+        class Meta:
             fields = {}
 
             def __init__(self, model_class):
@@ -633,11 +633,13 @@ class BaseModel(type):
         _meta = Meta(cls)
         setattr(cls, "_meta", _meta)
 
+        # 把类名转成小写，并将其中所有非字母（a-z）的部分替换为下划线
         _meta.db_table = re.sub("[^a-z]+", "_", cls.__name__.lower())
 
         has_primary_key = False
 
         for name, attr in list(cls.__dict__.items()):
+            # print(name, attr)
             if isinstance(attr, Field):
                 attr.add_to_class(cls, name)
                 _meta.fields[attr.name] = attr
