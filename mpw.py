@@ -5,8 +5,8 @@ import sqlite3
 import time
 from datetime import datetime
 
-DATABASE_NAME = os.environ.get("PEEWEE_DATABASE", "peewee.db")
-logger = logging.getLogger("peewee.logger")
+DATABASE_NAME = os.environ.get("PEEWEE_DATABASE", "mpw.db")
+logger = logging.getLogger("mpw.logger")
 
 
 class Database(object):
@@ -57,7 +57,7 @@ class QueryResultWrapper(object):
 
     def model_from_rowset(self, model_class, row_dict):
         instance = model_class()
-        for attr, value in row_dict.iteritems():
+        for attr, value in row_dict.items():
             if attr in instance._meta.fields:
                 field = instance._meta.fields[attr]
                 setattr(instance, attr, field.python_value(value))
@@ -73,7 +73,7 @@ class QueryResultWrapper(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         row = self.cursor.fetchone()
         if row:
             row_dict = self._row_to_dict(row, self.cursor)
@@ -113,7 +113,7 @@ class BaseQuery(object):
 
     def parse_query_args(self, **query):
         parsed = {}
-        for lhs, rhs in query.iteritems():
+        for lhs, rhs in query.items():
             if self.query_separator in lhs:
                 lhs, op = lhs.rsplit(self.query_separator, 1)
             else:
@@ -180,7 +180,7 @@ class BaseQuery(object):
                 alias_map[model] = ""
 
             if model in self._where:
-                for name, lookup in self._where[model].iteritems():
+                for name, lookup in self._where[model].items():
                     if name == "__raw__":
                         where_with_alias.append(lookup)
                     else:
@@ -221,7 +221,7 @@ class BaseQuery(object):
 
 class SelectQuery(BaseQuery):
     """
-    Model.select('*').where(field=val).join(RelModel).where(rel_field=val)
+    Model.select('*').where(fie/ld=val).join(RelModel).where(rel_field=val)
     """
 
     requires_commit = False
@@ -281,6 +281,7 @@ class SelectQuery(BaseQuery):
         joins, where, alias_map = self.compile_where()
 
         table = self.model._meta.db_table
+
         if alias_map.get(self.model, None):
             table = "%s AS %s" % (table, alias_map[self.model])
             if self.query == "*":
@@ -341,7 +342,7 @@ class UpdateQuery(BaseQuery):
 
     def parse_update(self):
         sets = []
-        for k, v in self.update_query.iteritems():
+        for k, v in self.update_query.items():
             field = self.model._meta.get_field_by_name(k)
             sets.append("%s=%s" % (k, field.lookup_value(None, v)))
 
@@ -407,7 +408,7 @@ class InsertQuery(BaseQuery):
     def parse_insert(self):
         cols = []
         vals = []
-        for k, v in self.insert_query.iteritems():
+        for k, v in self.insert_query.items():
             field = self.model._meta.get_field_by_name(k)
             cols.append(k)
             vals.append(str(field.lookup_value(None, v)))
@@ -636,7 +637,7 @@ class BaseModel(type):
 
         has_primary_key = False
 
-        for name, attr in cls.__dict__.items():
+        for name, attr in list(cls.__dict__.items()):
             if isinstance(attr, Field):
                 attr.add_to_class(cls, name)
                 _meta.fields[attr.name] = attr
@@ -699,7 +700,7 @@ class Model(metaclass=BaseModel):
 
     @classmethod
     def get(cls, **query):
-        return cls.select().where(**query).execute().next()
+        return next(cls.select().where(**query).execute())
 
     def save(self):
         field_dict = self.get_field_dict()
