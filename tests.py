@@ -9,7 +9,7 @@ from mpw import DeleteQuery, InsertQuery, SelectQuery, UpdateQuery
 class Blog(mpw.Model):
     title = mpw.CharField()
 
-    def __unicode__(self):
+    def __repr__(self):
         return self.title
 
 
@@ -19,7 +19,7 @@ class Entry(mpw.Model):
     pub_date = mpw.DateTimeField()
     blog = mpw.ForeignKeyField(Blog)
 
-    def __unicode__(self):
+    def __repr__(self):
         return "%s: %s" % (self.blog.title, self.title)
 
 
@@ -27,7 +27,7 @@ class EntryTag(mpw.Model):
     tag = mpw.CharField(max_length=50)
     entry = mpw.ForeignKeyField(Entry)
 
-    def __unicode__(self):
+    def __repr__(self):
         return self.tag
 
 

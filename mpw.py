@@ -649,13 +649,6 @@ class BaseModel(type):
             pk.add_to_class(cls, "id")
             _meta.fields["id"] = pk
 
-        if hasattr(cls, "__unicode__"):
-            setattr(
-                cls,
-                "__repr__",
-                lambda self: "<%s: %s>" % (self.__class__.__name__, self.__unicode__()),
-            )
-
         return cls
 
 
